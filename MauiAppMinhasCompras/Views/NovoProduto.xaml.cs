@@ -12,21 +12,42 @@ public partial class NovoProduto : ContentPage
 
     private async void ToolbarItem_Clicked(object sender, EventArgs e)
     {
-		try
-		{
-			Produto p = new Produto
-			{
-				Descricao = txt_descricao.Text,
-				Quantidade = Convert.ToDouble(txt_quantidade.Text),
-				Preco = Convert.ToDouble(txt_preco.Text)
-			};
+        try
+        {
+            if (string.IsNullOrWhiteSpace(txt_descricao.Text))
+            {
+                await DisplayAlert("Ops", "Por favor, preencha a descrição", "OK");
+                return;
+            }
 
-			await App.Db.Insert(p);
-			await DisplayAlert("Sucesso!", "Registro Inserido", "OK");
+            if (!double.TryParse(txt_quantidade.Text, out double quantidade) || quantidade <= 0)
+            {
+                await DisplayAlert("Ops", "Quantidade deve ser maior que zero e numérica", "OK");
+                return;
+            }
 
-		} catch (Exception ex)
-		{
-			await DisplayAlert("Ops", ex.Message, "OK");
-		}
+            if (!double.TryParse(txt_preco.Text, out double preco) || preco <= 0)
+            {
+                await DisplayAlert("Ops", "Preço deve ser maior que zero e numérico", "OK");
+                return;
+            }
+
+            Produto p = new Produto
+            {
+                Descricao = txt_descricao.Text,
+                Quantidade = quantidade,
+                Preco = preco
+            };
+
+            await App.Db.Insert(p);
+            await DisplayAlert("Sucesso!", "Registro Inserido", "OK");
+        }
+        catch (Exception ex)
+        {
+            await DisplayAlert("Ops", ex.Message, "OK");
+        }
     }
+
+
+
 }
