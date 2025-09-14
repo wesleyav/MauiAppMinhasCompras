@@ -8,9 +8,10 @@ namespace MauiAppMinhasCompras.Helpers
         readonly SQLiteAsyncConnection _conn;
 
         public SQLiteDatabaseHelper(string path)
-        { 
+        {
             _conn = new SQLiteAsyncConnection(path);
-            _conn.CreateTableAsync<Produto>().Wait();
+            _conn.CreateTableAsync<Produto>().Wait();            
+            _conn.ExecuteAsync("ALTER TABLE Produto ADD COLUMN Categoria TEXT").ContinueWith(t => { });
         }
 
         public Task<int> Insert(Produto p) 
@@ -19,9 +20,9 @@ namespace MauiAppMinhasCompras.Helpers
         }
         public Task<List<Produto>> Update(Produto p) 
         {
-            string sql = "UPDATE Produto SET Descricao=?, Quantidade=?, Preco=? WHERE Id=?";
+            string sql = "UPDATE Produto SET Descricao=?, Quantidade=?, Preco=?, Categoria=? WHERE Id=?";
             return _conn.QueryAsync<Produto>(
-                sql, p.Descricao, p.Quantidade, p.Preco, p.Id
+                sql, p.Descricao, p.Quantidade, p.Preco, p.Categoria, p.Id
             );
         }
         public Task<int> Delete(int id) 
@@ -34,8 +35,20 @@ namespace MauiAppMinhasCompras.Helpers
         }
         public Task<List<Produto>> Search(string q) 
         {
-            string sql = "SELECT * FROM Produto WHERE descricao LIKE '%" + q + "%'";
+            string sql = "SELECT * FROM Produto WHERE Descricao LIKE '%" + q + "%'";
             return _conn.QueryAsync<Produto>(sql);
         }
+        public Task<List<Produto>> GetByCategoria(string categoria)
+        {
+            return _conn.Table<Produto>().Where(p => p.Categoria == categoria).ToListAsync();
+        }
+
+        public Task<List<Produto>> SearchByCategoria(string query, string categoria)
+        {
+            string sql = "SELECT * FROM Produto WHERE Descricao LIKE ? AND Categoria = ?";
+            string likeQuery = $"%{query}%";
+            return _conn.QueryAsync<Produto>(sql, likeQuery, categoria);
+        }
+
     }
 }

@@ -5,10 +5,13 @@ namespace MauiAppMinhasCompras.Views;
 
 public partial class NovoProduto : ContentPage
 {
-	public NovoProduto()
+    private readonly List<string> categorias = new List<string> { "Alimentos", "Higiene", "Limpeza" };
+    public NovoProduto()
 	{
 		InitializeComponent();
-	}
+        pickerCategoria.ItemsSource = categorias;
+        pickerCategoria.SelectedIndex = 0;
+    }
 
     private async void ToolbarItem_Clicked(object sender, EventArgs e)
     {
@@ -32,11 +35,18 @@ public partial class NovoProduto : ContentPage
                 return;
             }
 
+            if (pickerCategoria.SelectedIndex < 0)
+            {
+                await DisplayAlert("Ops", "Por favor, selecione uma categoria", "OK");
+                return;
+            }
+
             Produto p = new Produto
             {
                 Descricao = txt_descricao.Text,
                 Quantidade = quantidade,
-                Preco = preco
+                Preco = preco,
+                Categoria = pickerCategoria.SelectedItem.ToString()
             };
 
             await App.Db.Insert(p);
